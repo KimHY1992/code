@@ -1,0 +1,73 @@
+#먼저 실행해서 모듈 불러오기
+import selenium.webdriver.support.ui as ui
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver import ActionChains
+from datetime import datetime
+import time
+from logging import log
+
+#작동시켜서 블랭크 창을 키고 옵션 셋팅해주기
+CHROMEDRIVER_PATH = './chromedriver.exe'
+chrome_options = Options()
+chrome_options.add_argument('--start-maximized')
+driver = webdriver.Chrome( executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options )
+driver.delete_all_cookies()
+driver.implicitly_wait(20)
+driver.set_page_load_timeout(10)
+driver.set_script_timeout(10)
+driver.execute_script('window.open("about:blank", "_blank");')
+driver.execute_script('window.open("about:blank", "_blank");')
+driver.execute_script('window.open("about:blank", "_blank");')
+
+#main에 definition 해주고 실행
+def main():
+    chrome_options.add_argument('headless')
+    chrome_options.add_argument('window-size=1920x1080')
+    chrome_options.add_argument('--disable-gpu')
+    tabs = driver.window_handles
+    path = 'C:/Users/USER-PC/Desktop/screenshot/schot'
+    name = datetime.now().strftime('%Y-%m-%d-%H-%M')
+    count = [0, 1, 2]
+    f = open('C:/Users/USER-PC/Desktop/url_list.txt', 'r')
+    try:
+        url_list = f.readlines()
+        for n, url in zip(count, url_list):
+            driver.switch_to.window(tabs[n])
+            driver.get(url)
+            filename = path + driver.title + name + '.png'
+            driver.save_screenshot(filename)
+    except Exception as e:
+        log.error('selenium screenshot error.')
+    finally:
+        f.close()
+
+    #밑의 내용을 위 반복문으로 만듬
+    #driver.switch_to.window(tabs[0])
+    #driver.get('https://www.naver.com/')
+    #filename = path + driver.title + name + '.png'
+    #driver.save_screenshot(filename)
+    #driver.switch_to.window(tabs[1])
+    #driver.get('https://www.google.com/')
+    #filename = path + driver.title + name + '.png'
+    #driver.save_screenshot(filename)
+    #driver.switch_to.window(tabs[2])
+    #driver.get('https://heodolf.tistory.com/')
+    #filename = path + driver.title + name + '.png'
+    #driver.save_screenshot(filename)
+
+# scheduled_job에 main을 definition 해주기
+def scheduled_job():
+    main()
+
+# 반복문 실행
+schedule_time = datetime(year = 2023, month = 4, day = 3, hour = 22, minute = 14, second = 0)
+while True:
+    now = datetime.now()
+    if now >= schedule_time:
+        scheduled_job()
+        schedule_time = schedule_time.replace(day = schedule_time.day+1)
+
+#while문 나가고 싶으면 터미널 화면 클릭하고 ctrl + c 키 누르세요
